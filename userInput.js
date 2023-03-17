@@ -1,88 +1,30 @@
-const getHistoricalData = require('./historicalData');
-const readline = require('readline');
-const { analyzePricePatterns } = require('./pricePatterns');
-const { groupPatternsByType } = require('./groupedPatterns');
-const { calculatePatternLengthStatistics } = require('./statistics');
+const readline = require("readline");
 
-
-const rl = readline.createInterface({
-  input: process.stdin,
-  output: process.stdout,
-});
-
-function getDefaultEndDate() {
-  const date = new Date();
-  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
-}
-
-function getDefaultStartDate() {
-  const date = new Date();
-  date.setFullYear(date.getFullYear() - 1);
-  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
-}
-
-async function getSymbol() {
-  return new Promise((resolve) => {
-    rl.question('Podaj symbol instrumentu finansowego (domyślnie: BTCUSDT): ', (inputSymbol) => {
-      const symbol = inputSymbol.trim() ? inputSymbol : 'BTCUSDT';
-      resolve(symbol);
+function getUserInput() {
+  return new Promise(async (resolve) => {
+    const rl = readline.createInterface({
+      input: process.stdin,
+      output: process.stdout,
     });
-  });
-}
 
-async function getStartDate() {
-  return new Promise((resolve) => {
-    rl.question(`Podaj datę początkową (YYYY-MM-DD, domyślnie: ${getDefaultStartDate()}): `, (startDate) => {
-      startDate = startDate || getDefaultStartDate();
-      resolve(startDate);
-    });
-  });
-}
+    function question(prompt, defaultValue) {
+      return new Promise((resolve) => {
+        rl.question(`${prompt} (domyślnie: ${defaultValue}): `, (answer) => {
+          resolve(answer || defaultValue);
+        });
+      });
+    }
 
-async function getEndDate() {
-  return new Promise((resolve) => {
-    rl.question(`Podaj datę końcową (YYYY-MM-DD, domyślnie: ${getDefaultEndDate()}): `, (endDate) => {
-      endDate = endDate || getDefaultEndDate();
-      resolve(endDate);
-    });
-  });
-}
+    const symbol = await question("Podaj symbol par walutowych", "BTCUSDT");
+    const startDate = await question("Podaj datę początkową (RRRR-MM-DD)", "2021-01-01");
+    const endDate = await question("Podaj datę końcową (RRRR-MM-DD)", "2021-12-31");
+    const interval = await question("Podaj interwał (np. 1m, 5m, 1h, 1d)", "1d");
 
-async function getInterval() {
-  return new Promise((resolve) => {
-    const intervalQuestion = 'Podaj interwał czasowy (1m, 3m, 5m, 15m, 30m, 1h, 2h, 4h, 6h, 8h, 12h, 1d, 3d, 1w, 1M, domyślnie: 1d): ';
-    const intervals = ['1m', '3m', '5m', '15m', '30m', '1h', '2h', '4h', '6h', '8h', '12h', '1d', '3d', '1w', '1M'];
-
-    rl.question(intervalQuestion, (intervalAnswer) => {
-      resolve(intervals.includes(intervalAnswer) ? intervalAnswer : '1d');
-    });
-  });
-}
-
-async function getUserInput() {
-  return new Promise(async (resolve, reject) => {
-    const symbol = await getSymbol();
-    const startDate = await getStartDate();
-    const endDate = await getEndDate();
-    const interval = await getInterval();
     rl.close();
 
-    console.log('Params:', { symbol, startDate, endDate, interval }); 
-
-    const data = await getHistoricalData(symbol, startDate, endDate, interval);
-
-    if (data) {
-      const closePrices = data.map((entry) => entry.close);
-      const volumes = data.map((entry) => entry.volume);
-      const dates = data.map((entry) => new Date(entry.closeTime).toISOString().slice(0, 10));
-      resolve({ symbol, startDate, endDate, interval, closePrices, volumes, dates });
-    } else {
-      reject('Nie udało się pobrać danych historycznych.');
-    }
+    resolve({ symbol, startDate, endDate, interval });
   });
 }
-
-
 
 module.exports = {
   getUserInput,

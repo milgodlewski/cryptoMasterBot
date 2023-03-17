@@ -96,7 +96,7 @@ function isInverseHeadAndShoulders(prices, i, threshold) {
 }
 
 function isFlag(prices, volumes, i, priceThreshold, volumeThreshold, rsi, rsiThreshold) {
-  if (i < 2 || i >= prices.length - 2) return false;
+  if (i < 3 || i >= prices.length - 2) return false; 
 
   const previousPrice = prices[i - 1];
   const currentPrice = prices[i];

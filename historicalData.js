@@ -1,7 +1,7 @@
 const config = require('./config');
 const axios = require('axios');
 
-async function getHistoricalData(symbol, startDate, endDate, interv) {
+module.exports = async function getHistoricalData(symbol, startDate, endDate, interv) {
   try {
     const start = new Date(startDate);
     const end = new Date(endDate);
@@ -39,4 +39,3 @@ async function getHistoricalData(symbol, startDate, endDate, interv) {
   }
 }
 
-module.exports = getHistoricalData;
