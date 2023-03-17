@@ -19,23 +19,24 @@ function analyzePricePatterns(prices, volume, options = {}) {
   const rsi = calculateRSI(prices, rsiPeriod);
 
   const patternsMapping = {
-    DoubleBottom: isDoubleBottom,
-    DoubleTop: isDoubleTop,
+    DoubleBottom: (prices, i) => isDoubleBottom(prices, i, threshold),
+    DoubleTop: (prices, i) => isDoubleTop(prices, i, threshold),
     SymmetricalTriangle: (prices, i) => isTriangle(prices, i, threshold, 'symmetrical'),
     AscendingTriangle: (prices, i) => isTriangle(prices, i, threshold, 'ascending'),
     DescendingTriangle: (prices, i) => isTriangle(prices, i, threshold, 'descending'),
     Flag: (prices, i) => isFlag(prices, volume, i, threshold, volumeThreshold, rsi, rsiThreshold),
-    RectangleTriangle: isRectangleTriangle,
-    HeadAndShoulders: isHeadAndShoulders,
-    InverseHeadAndShoulders: isInverseHeadAndShoulders,
+    RectangleTriangle: (prices, i) => isRectangleTriangle(prices, i, threshold),
+    HeadAndShoulders: (prices, i) => isHeadAndShoulders(prices, i, threshold),
+    InverseHeadAndShoulders: (prices, i) => isInverseHeadAndShoulders(prices, i, threshold),
   };
+
 
   for (let i = 1; i < prices.length - 2; i++) {
     const patternLength = i - (patterns.length > 0 ? patterns[patterns.length - 1].index : 0);
 
     Object.keys(patternsMapping).forEach((patternName) => {
       const patternFunc = patternsMapping[patternName];
-      if (patternFunc(prices, i, threshold)) {
+      if (patternFunc(prices, i)) {
         patterns.push({ index: i, type: patternName, length: patternLength });
       }
     });
@@ -43,6 +44,7 @@ function analyzePricePatterns(prices, volume, options = {}) {
 
   return patterns;
 }
+
 
 function isDescendingTriangle(prices, i, threshold) {
   if (i < 2 || i >= prices.length - 2) return false;

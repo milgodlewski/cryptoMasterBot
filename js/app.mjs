@@ -17,7 +17,9 @@ document.getElementById("user-input-form").addEventListener("submit", async (eve
 async function main(symbol, startDate, endDate, interval) {
   const historicalData = await getHistoricalData(symbol, startDate, endDate, interval);
   const userInput = { symbol, startDate, endDate, interval };
-  const patterns = analyzePatterns(historicalData, userInput);
-  patternPerformance(patterns);
+  const prices = historicalData.map((entry) => entry.close);
+  const volumes = historicalData.map((entry) => entry.volume);
+  const patterns = analyzePatterns(prices, volumes);
+  patternPerformance(historicalData, patterns);
   plotHistoricalData(historicalData, patterns, userInput);
 }

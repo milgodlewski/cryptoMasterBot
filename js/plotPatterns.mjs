@@ -8,16 +8,26 @@ function plotHistoricalData(prices, patterns, userInput) {
     name: `${userInput.symbol} Price`,
   };
 
-  const trace2 = {
-    x: patterns.map((pattern) => new Date(prices[pattern.index].openTime)),
-    y: patterns.map((pattern) => prices[pattern.index].close),
-    text: patterns.map((pattern) => pattern.type),
-    mode: 'markers+text',
-    textposition: 'top center',
-    name: 'Patterns',
-  };
+  const patternTraces = {};
 
-  const data = [trace1, trace2];
+  patterns.forEach((pattern) => {
+    if (!patternTraces[pattern.type]) {
+      patternTraces[pattern.type] = {
+        x: [],
+        y: [],
+        text: [],
+        mode: 'markers+text',
+        textposition: 'top center',
+        name: pattern.type,
+      };
+    }
+
+    patternTraces[pattern.type].x.push(new Date(prices[pattern.index].openTime));
+    patternTraces[pattern.type].y.push(prices[pattern.index].close);
+    patternTraces[pattern.type].text.push(pattern.type);
+  });
+
+  const data = [trace1, ...Object.values(patternTraces)];
 
   const layout = {
     title: `${userInput.symbol} Price History`,
