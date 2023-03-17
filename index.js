@@ -1,25 +1,17 @@
 const { getUserInput } = require('./userInput');
-const { analyzePricePatterns } = require('./pricePatterns');
-const { groupPatternsByType } = require('./groupedPatterns');
-const { calculatePatternLengthStatistics } = require('./statistics');
-const getHistoricalData  = require('./historicalData');
+const getHistoricalData = require('./historicalData');
+const { analyze } = require('./pricePatterns');
+const { calculateAndPrintStatistics } = require('./statistics');
 
 async function main() {
-  try {
-    const { symbol, startDate, endDate, interval } = await getUserInput();
-    const data = await getHistoricalData(symbol, startDate, endDate, interval);
-    const closePrices = data.map(entry => entry.close);
-    const volumes = data.map(entry => entry.volume); // Dodajemy tę linię, aby stworzyć tablicę volumes
-    const pricePatterns = analyzePricePatterns(closePrices, volumes); // Poprawiamy na volumes
+  const { symbol, startDate, endDate, interval } = await getUserInput();
+  const historicalData = await getHistoricalData(symbol, startDate, endDate, interval);
+  
+  const closePrices = historicalData.map(data => data.close);
+  const volumes = historicalData.map(data => data.volume);
+  const patterns = analyze(closePrices, volumes);
 
-    console.log('\nWystąpienia wzorców cenowych:\n');
-    pricePatterns.forEach(pattern => { // Zmieniamy groupedPatterns na pricePatterns
-      console.log(`Typ: ${pattern.type}, Długość: ${pattern.length}, Indeks: ${pattern.index}`);
-    });
-
-  } catch (error) {
-    console.error('Wystąpił błąd:', error);
-  }
+  calculateAndPrintStatistics(patterns, closePrices);
 }
 
 main();

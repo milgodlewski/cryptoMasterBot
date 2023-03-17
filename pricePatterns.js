@@ -207,5 +207,5 @@ function calculateRSI(prices, period) {
 }
 
 module.exports = {
-  analyzePricePatterns,
+  analyze: analyzePricePatterns,
 };

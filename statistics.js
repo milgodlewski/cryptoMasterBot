@@ -1,8 +1,10 @@
+const { groupPatternsByType } = require('./groupedPatterns');
+
 function isValidNumber(value) {
   return !isNaN(value) && isFinite(value);
 }
 
-function calculateAverage(array) {
+function calculateMean(array) {
   const validNumbers = array.filter(isValidNumber);
   if (validNumbers.length === 0) return null;
   const sum = validNumbers.reduce((accumulator, currentValue) => accumulator + currentValue, 0);
@@ -25,38 +27,32 @@ function calculateMedian(array) {
 function calculateStandardDeviation(array) {
   const validNumbers = array.filter(isValidNumber);
   if (validNumbers.length === 0) return null;
-  const average = calculateAverage(validNumbers);
+  const average = calculateMean(validNumbers);
   const squaredDifferences = validNumbers.map(value => (value - average) ** 2);
-  const variance = calculateAverage(squaredDifferences);
-  console.log("standardDeviation - " + Math.sqrt(variance));
+  const variance = calculateMean(squaredDifferences);
   return Math.sqrt(variance);
 }
 
-function calculatePatternLengthStatistics(patterns) {
-  const patternLengths = patterns.map(pattern => pattern.length);
-  const average = calculateAverage(patternLengths);
-  const median = calculateMedian(patternLengths);
-  const standardDeviation = calculateStandardDeviation(patternLengths);
+function printPriceStatistics(patterns, prices) {
+  const patternPrices = patterns.map(pattern => prices[pattern.index]); // Zmienione tutaj
+  const mean = calculateMean(patternPrices);
+  const median = calculateMedian(patternPrices);
+  const stddev = calculateStandardDeviation(patternPrices);
 
-  return { average, median, standardDeviation };
+  console.log(`  Statystyki cen wzorców: Średnia: ${mean !== null ? mean.toFixed(2) : 'N/A'}, Mediana: ${median !== null ? median.toFixed(2) : 'N/A'}, Odchylenie standardowe: ${stddev !== null ? stddev.toFixed(2) : 'N/A'}`);
 }
 
-function printStats(patternName, patterns) {
-  if (patterns.length === 0) {
-    console.log(`\n${patternName}: brak wzorców`);
-    return;
-  }
+function calculateAndPrintStatistics(patterns, closePrices) {
+  const patternStats = groupPatternsByType(patterns);
+  const patternTypes = Object.keys(patternStats);
 
-  const { average, median, standardDeviation } = calculatePatternLengthStatistics(patterns);
-  console.log('DUPA');
-  console.log(`\n${patternName}: ${patterns.length}`);
-  console.log(
-    `  Statystyki długości wzorców: Średnia: ${average ? average.toFixed(2) : "brak danych"}, Mediana: ${
-      median !== null ? median : "null"
-    }, Odchylenie standardowe: ${standardDeviation ? standardDeviation.toFixed(2) : "brak danych"}`
-  );
+  for (const type of patternTypes) {
+    const patternTypeStats = patternStats[type];
+    console.log(`${type}: ${patternTypeStats.length}`);
+    printPriceStatistics(patternTypeStats, closePrices);
+  }
 }
 
 module.exports = {
-  calculatePatternLengthStatistics
+  calculateAndPrintStatistics,
 };
