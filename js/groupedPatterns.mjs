@@ -11,6 +11,4 @@ function groupPatternsByType(patterns) {
   return groupedPatterns;
 }
 
-module.exports = {
-  groupPatternsByType,
-};
+export { groupPatternsByType };

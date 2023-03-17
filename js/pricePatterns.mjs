@@ -1,34 +1,44 @@
-const { calculateSupportAndResistance } = require('./supportAndResistance');
-const { analyzeCandlesticks } = require('./candlestickAnalysis');
-
 function isValidNumber(value) {
   return !isNaN(value) && isFinite(value);
 }
 
-function analyzePricePatterns(prices, volume, threshold = 0.03, volumeThreshold = 0.05, rsiPeriod = 14, rsiThreshold = 30) { // Zmienione tutaj
+function analyzePricePatterns(prices, volume, options = {}) {
+  const defaultOptions = {
+    threshold: 0.03,
+    volumeThreshold: 0.05,
+    rsiPeriod: 14,
+    rsiThreshold: 30,
+  };
+  const { threshold, volumeThreshold, rsiPeriod, rsiThreshold } = {
+    ...defaultOptions,
+    ...options,
+  };
+
   const patterns = [];
 
   const rsi = calculateRSI(prices, rsiPeriod);
-  
+
+  const patternsMapping = {
+    DoubleBottom: isDoubleBottom,
+    DoubleTop: isDoubleTop,
+    SymmetricalTriangle: (prices, i) => isTriangle(prices, i, threshold, 'symmetrical'),
+    AscendingTriangle: (prices, i) => isTriangle(prices, i, threshold, 'ascending'),
+    DescendingTriangle: (prices, i) => isTriangle(prices, i, threshold, 'descending'),
+    Flag: (prices, i) => isFlag(prices, volume, i, threshold, volumeThreshold, rsi, rsiThreshold),
+    RectangleTriangle: isRectangleTriangle,
+    HeadAndShoulders: isHeadAndShoulders,
+    InverseHeadAndShoulders: isInverseHeadAndShoulders,
+  };
+
   for (let i = 1; i < prices.length - 2; i++) {
     const patternLength = i - (patterns.length > 0 ? patterns[patterns.length - 1].index : 0);
-    if (isDoubleBottom(prices, i, threshold)) {
-      patterns.push({ index: i, type: 'Double Bottom', length: patternLength });
-    } else if (isDoubleTop(prices, i, threshold)) {
-      patterns.push({ index: i, type: 'Double Top', length: patternLength });
-    } else if (isTriangle(prices, i, threshold, 'symmetrical')) {
-      patterns.push({ index: i, type: 'Symmetrical Triangle', length: patternLength });
-    } else if (isTriangle(prices, i, threshold, 'ascending')) {
-      patterns.push({ index: i, type: 'Ascending Triangle', length: patternLength });
-    } else if (isTriangle(prices, i, threshold, 'descending')) {
-      patterns.push({ index: i, type: 'Descending Triangle', length: patternLength });
-    } else if (isFlag(prices, volume, i, threshold, volumeThreshold, rsi, rsiThreshold)) {
-      patterns.push({ index: i, type: 'Flag', length: patternLength });
-    } else if (isDescendingTriangle(prices, i, threshold)) {
-      patterns.push({ index: i, type: 'Descending Triangle', length: patternLength });
-    } else if (isRectangleTriangle(prices, i, threshold)) {
-      patterns.push({ index: i, type: 'Rectangle Triangle', length: patternLength });
-    }
+
+    Object.keys(patternsMapping).forEach((patternName) => {
+      const patternFunc = patternsMapping[patternName];
+      if (patternFunc(prices, i, threshold)) {
+        patterns.push({ index: i, type: patternName, length: patternLength });
+      }
+    });
   }
 
   return patterns;
@@ -206,6 +216,4 @@ function calculateRSI(prices, period) {
   return rsi;
 }
 
-module.exports = {
-  analyze: analyzePricePatterns,
-};
+export { analyzePricePatterns as analyzePatterns };

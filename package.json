@@ -1,5 +1,15 @@
 {
+  "name": "CryptoMasterBot",
+  "version": "1.0.0",
+  "description": "Bot Project to sample data to external analysis",
+  "main": "app.mjs",
   "dependencies": {
-    "axios": "^1.3.4"
-  }
+    "axios": "^1.3.0",
+    "plotly.js-dist": "^2.6.5"
+  },
+  "scripts": {
+    "start": "esbuild js/app.mjs --bundle --outfile=dist/bundle.js --servedir=. --watch"
+  },
+  "author": "Milo",
+  "license": "ISC"
 }

@@ -1,12 +1,17 @@
-const config = require('./config');
-const axios = require('axios');
+import config from './config.mjs';
 
-module.exports = async function getHistoricalData(symbol, startDate, endDate, interv) {
+let axios;
+const CORS_PROXY = "http://localhost:8080/";
+
+async function getHistoricalData(symbol, startDate, endDate, interv) {
+  const start = new Date(startDate);
+  const end = new Date(endDate);
+
+  if (!axios) {
+    axios = await import('axios').then(module => module.default);
+  }
   try {
-    const start = new Date(startDate);
-    const end = new Date(endDate);
-
-    const response = await axios.get(`${config.apiUrl}/api/v3/klines`, {
+    const response = await axios.get(`${CORS_PROXY}https://api.binance.com/api/v3/klines`, {
       params: {
         symbol: symbol,
         interval: interv,
@@ -39,3 +44,6 @@ module.exports = async function getHistoricalData(symbol, startDate, endDate, in
   }
 }
 
+
+
+export { getHistoricalData };

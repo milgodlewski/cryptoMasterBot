@@ -1,4 +1,4 @@
-const { groupPatternsByType } = require('./groupedPatterns');
+import { groupPatternsByType } = from "./groupedPatterns";
 
 function isValidNumber(value) {
   return !isNaN(value) && isFinite(value);
@@ -75,6 +75,4 @@ function calculateAndPrintStatistics(patterns, closePrices) {
 }
 
 
-module.exports = {
-  calculateAndPrintStatistics,
-};
+export { calculateAndPrintStatistics };

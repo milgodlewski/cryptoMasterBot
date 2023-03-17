@@ -1,0 +1,388 @@
+==> patternPerformance.mjs <==
+function patternPerformance(patterns, prices, lookahead = 5) {
+  const performance = {};
+
+  patterns.forEach((pattern) => {
+    const { index, type } = pattern;
+    const currentPrice = prices[index];
+    const futurePrice = prices[index + lookahead];
+
+    if (currentPrice && futurePrice) {
+      const priceChange = (futurePrice - currentPrice) / currentPrice;
+      if (!performance[type]) {
+        performance[type] = {
+          occurrences: 0,
+          positive: 0,
+          negative: 0,
+        };
+      }
+
+      performance[type].occurrences++;
+      if (priceChange > 0) {
+        performance[type].positive++;
+      } else if (priceChange < 0) {
+        performance[type].negative++;
+      }
+    }
+  });
+
+  Object.keys(performance).forEach((patternType) => {
+    const patternData = performance[patternType];
+    patternData.positiveRate = patternData.positive / patternData.occurrences;
+    patternData.negativeRate = patternData.negative / patternData.occurrences;
+  });
+
+  return performance;
+}
+
+export { patternPerformance };
+==> plotPatterns.mjs <==
+import * as plotly from 'plotly.js-dist';
+
+function plotPatterns(prices, patterns) {
+  const trace1 = {
+    x: Array.from({ length: prices.length }, (_, i) => i),
+    y: prices,
+    mode: 'lines',
+    name: 'Price',
+  };
+
+  const trace2 = {
+    x: patterns.map((pattern) => pattern.index),
+    y: patterns.map((pattern) => prices[pattern.index]),
+    text: patterns.map((pattern) => pattern.type),
+    mode: 'markers+text',
+    textposition: 'top center',
+    name: 'Patterns',
+  };
+
+  const data = [trace1, trace2];
+
+  const layout = {
+    title: 'Price Patterns',
+    xaxis: { title: 'Time' },
+    yaxis: { title: 'Price' },
+  };
+
+  plotly.newPlot(document.getElementById('plot'), data, layout);
+}
+
+export { plotPatterns };
+
+==> pricePatterns.mjs <==
+function isValidNumber(value) {
+  return !isNaN(value) && isFinite(value);
+}
+
+function analyzePricePatterns(prices, volume, options = {}) {
+  const defaultOptions = {
+    threshold: 0.03,
+    volumeThreshold: 0.05,
+    rsiPeriod: 14,
+    rsiThreshold: 30,
+  };
+  const { threshold, volumeThreshold, rsiPeriod, rsiThreshold } = {
+    ...defaultOptions,
+    ...options,
+  };
+
+  const patterns = [];
+
+  const rsi = calculateRSI(prices, rsiPeriod);
+
+  const patternsMapping = {
+    DoubleBottom: isDoubleBottom,
+    DoubleTop: isDoubleTop,
+    SymmetricalTriangle: (prices, i) => isTriangle(prices, i, threshold, 'symmetrical'),
+    AscendingTriangle: (prices, i) => isTriangle(prices, i, threshold, 'ascending'),
+    DescendingTriangle: (prices, i) => isTriangle(prices, i, threshold, 'descending'),
+    Flag: (prices, i) => isFlag(prices, volume, i, threshold, volumeThreshold, rsi, rsiThreshold),
+    RectangleTriangle: isRectangleTriangle,
+    HeadAndShoulders: isHeadAndShoulders,
+    InverseHeadAndShoulders: isInverseHeadAndShoulders,
+  };
+
+  for (let i = 1; i < prices.length - 2; i++) {
+    const patternLength = i - (patterns.length > 0 ? patterns[patterns.length - 1].index : 0);
+
+    Object.keys(patternsMapping).forEach((patternName) => {
+      const patternFunc = patternsMapping[patternName];
+      if (patternFunc(prices, i, threshold)) {
+        patterns.push({ index: i, type: patternName, length: patternLength });
+      }
+    });
+  }
+
+  return patterns;
+}
+
+function isDescendingTriangle(prices, i, threshold) {
+  if (i < 2 || i >= prices.length - 2) return false;
+
+  const lowerHigh = prices[i - 1];
+  const currentHigh = prices[i];
+  const support = prices[i - 2];
+
+  const isLowerHigh = currentHigh < lowerHigh;
+  const isSupport = Math.abs(support - prices[i - 3]) / prices[i - 3] <= threshold;
+
+  return isLowerHigh && isSupport;
+}
+
+function isRectangleTriangle(prices, i, threshold) {
+  if (i < 3 || i >= prices.length - 3) return false;
+
+  const high1 = prices[i - 3];
+  const high2 = prices[i - 1];
+  const low1 = prices[i - 2];
+  const low2 = prices[i];
+
+  const isHighResistance = Math.abs(high1 - high2) / high2 <= threshold;
+  const isLowSupport = Math.abs(low1 - low2) / low2 <= threshold;
+
+  return isHighResistance && isLowSupport;
+}
+
+function isHeadAndShoulders(prices, i, threshold) {
+  if (i < 2 || i >= prices.length - 2) return false;
+
+  const leftShoulder = prices[i - 2];
+  const head = prices[i - 1];
+  const rightShoulder = prices[i];
+  const leftTrough = prices[i - 3];
+  const rightTrough = prices[i + 1];
+
+  return (
+    head > leftShoulder &&
+    head > rightShoulder &&
+    Math.abs(leftShoulder - rightShoulder) / rightShoulder <= threshold &&
+    Math.abs(leftTrough - rightTrough) / rightTrough <= threshold
+  );
+}
+
+function isInverseHeadAndShoulders(prices, i, threshold) {
+  if (i < 2 || i >= prices.length - 2) return false;
+
+  const leftShoulder = prices[i - 2];
+  const head = prices[i - 1];
+  const rightShoulder = prices[i];
+  const leftPeak = prices[i - 3];
+  const rightPeak = prices[i + 1];
+
+  return (
+    head < leftShoulder &&
+    head < rightShoulder &&
+    Math.abs(leftShoulder - rightShoulder) / rightShoulder <= threshold &&
+    Math.abs(leftPeak - rightPeak) / rightPeak <= threshold
+  );
+}
+
+function isFlag(prices, volumes, i, priceThreshold, volumeThreshold, rsi, rsiThreshold) {
+  if (i < 3 || i >= prices.length - 2) return false; 
+
+  const previousPrice = prices[i - 1];
+  const currentPrice = prices[i];
+  const nextPrice = prices[i + 1];
+
+  const isFlagPole =
+    Math.abs(previousPrice - prices[i - 2]) / prices[i - 2] > priceThreshold &&
+    Math.abs(volumes[i - 1] - volumes[i - 2]) / volumes[i - 2] > volumeThreshold;
+  const isFlagBody =
+    Math.abs(currentPrice - previousPrice) / previousPrice <= priceThreshold &&
+    Math.abs(currentPrice - nextPrice) / currentPrice <= priceThreshold;
+
+  const isRSIInRange = rsi[i - 1] >= rsiThreshold && rsi[i - 1] <= 100 - rsiThreshold;
+
+  return isFlagPole && isFlagBody && isRSIInRange;
+}
+
+function isDoubleBottom(prices, i, threshold) {
+  const currentPrice = prices[i];
+  const previousPrice = prices[i - 1];
+  const nextPrice = prices[i + 1];
+
+  return (
+    Math.abs(currentPrice - previousPrice) / previousPrice <= threshold &&
+    Math.abs(currentPrice - nextPrice) / currentPrice <= threshold &&
+    currentPrice < previousPrice &&
+    currentPrice < nextPrice
+  );
+}
+
+function isDoubleTop(prices, i, threshold) {
+  const currentPrice = prices[i];
+  const previousPrice = prices[i - 1];
+  const nextPrice = prices[i + 1];
+
+  return (
+    Math.abs(currentPrice - previousPrice) / previousPrice <= threshold &&
+    Math.abs(currentPrice - nextPrice) / currentPrice <= threshold &&
+    currentPrice > previousPrice &&
+    currentPrice > nextPrice
+  );
+}
+
+function isTriangle(prices, i, threshold, type) {
+  const currentPrice = prices[i];
+  const previousPrice = prices[i - 1];
+  const nextPrice = prices[i + 1];
+
+  const isSymmetrical =
+    Math.abs(previousPrice - nextPrice) / previousPrice <= threshold &&
+    currentPrice !== previousPrice &&
+    currentPrice !== nextPrice;
+
+  const isAscending = currentPrice > previousPrice && currentPrice < nextPrice;
+  const isDescending = currentPrice < previousPrice && currentPrice > nextPrice;
+
+  switch (type) {
+    case 'symmetrical':
+      return isSymmetrical;
+    case 'ascending':
+      return isSymmetrical && isAscending;
+    case 'descending':
+      return isSymmetrical && isDescending;
+    default:
+      return false;
+  }
+}
+
+function calculateRSI(prices, period) {
+  const gainsAndLosses = [];
+  for (let i = 1; i < prices.length; i++) {
+    gainsAndLosses.push(prices[i] - prices[i - 1]);
+  }
+
+  const avgGains = [];
+  const avgLosses = [];
+  let sumGain = 0;
+  let sumLoss = 0;
+
+  for (let i = 0; i < gainsAndLosses.length; i++) {
+    sumGain += Math.max(gainsAndLosses[i], 0);
+    sumLoss += Math.abs(Math.min(gainsAndLosses[i], 0));
+
+    if (i >= period) {
+      sumGain -= Math.max(gainsAndLosses[i - period], 0);
+      sumLoss -= Math.abs(Math.min(gainsAndLosses[i - period], 0));
+    }
+
+    if (i >= period - 1) {
+      avgGains.push(sumGain / period);
+      avgLosses.push(sumLoss / period);
+    }
+  }
+
+  const rsi = [];
+  for (let i = 0; i < avgGains.length; i++) {
+    const rs = avgGains[i] / avgLosses[i];
+    const rsiValue = 100 - 100 / (1 + rs);
+
+    if (isValidNumber(rsiValue)) {
+      rsi.push(rsiValue);
+    } else {
+      rsi.push(null);
+    }
+  }
+
+  return rsi;
+}
+
+export { analyzePricePatterns as analyzePatterns };
+==> statistics.mjs <==
+import { groupPatternsByType } = from "./groupedPatterns";
+
+function isValidNumber(value) {
+  return !isNaN(value) && isFinite(value);
+}
+
+function calculateMean(array) {
+  const validNumbers = array.filter(isValidNumber);
+  if (validNumbers.length === 0) return null;
+  const sum = validNumbers.reduce((accumulator, currentValue) => accumulator + currentValue, 0);
+  return sum / validNumbers.length;
+}
+
+function calculateMedian(array) {
+  const validNumbers = array.filter(isValidNumber);
+  if (validNumbers.length === 0) return null;
+  const sortedArray = validNumbers.slice().sort((a, b) => a - b);
+  const middleIndex = Math.floor(sortedArray.length / 2);
+
+  if (sortedArray.length % 2 === 0) {
+    return (sortedArray[middleIndex - 1] + sortedArray[middleIndex]) / 2;
+  } else {
+    return sortedArray[middleIndex];
+  }
+}
+
+function calculateStandardDeviation(array) {
+  const validNumbers = array.filter(isValidNumber);
+  if (validNumbers.length === 0) return null;
+  const average = calculateMean(validNumbers);
+  const squaredDifferences = validNumbers.map(value => (value - average) ** 2);
+  const variance = calculateMean(squaredDifferences);
+  return Math.sqrt(variance);
+}
+
+function printPriceStatistics(patterns, prices) {
+  const patternPrices = patterns.map(pattern => prices[pattern.index]); // Zmienione tutaj
+  const mean = calculateMean(patternPrices);
+  const median = calculateMedian(patternPrices);
+  const stddev = calculateStandardDeviation(patternPrices);
+
+  console.log(`  Statystyki cen wzorców: Średnia: ${mean !== null ? mean.toFixed(2) : 'N/A'}, Mediana: ${median !== null ? median.toFixed(2) : 'N/A'}, Odchylenie standardowe: ${stddev !== null ? stddev.toFixed(2) : 'N/A'}`);
+}
+
+function calculateAndPrintStatistics(patterns, closePrices) {
+  const patternStats = {};
+
+  for (const pattern of patterns) {
+    if (!patternStats[pattern.type]) {
+      patternStats[pattern.type] = {
+        count: 0,
+        prices: [],
+      };
+    }
+
+    patternStats[pattern.type].count++;
+    const patternPrice = closePrices[pattern.index];
+    patternStats[pattern.type].prices.push(patternPrice);
+  }
+
+  console.log("Statystyki cen wzorców:");
+  const allPrices = closePrices.slice(1, closePrices.length - 2); // Pomiń pierwszy i dwa ostatnie elementy, ponieważ nie są używane w analizie wzorców
+  const mean = calculateMean(allPrices);
+  const median = calculateMedian(allPrices);
+  const standardDeviation = calculateStandardDeviation(allPrices, mean);
+  console.log(
+    `  Średnia: ${mean.toFixed(2)}, Mediana: ${median.toFixed(
+      2,
+    )}, Odchylenie standardowe: ${standardDeviation.toFixed(2)}`
+  );
+
+  for (const patternType in patternStats) {
+    console.log(`${patternType}: ${patternStats[patternType].count}`);
+  }
+}
+
+
+export { calculateAndPrintStatistics };
+==> userInput.mjs <==
+async function getUserInput() {
+  return new Promise((resolve) => {
+    const form = document.getElementById("user-input-form");
+    form.addEventListener("submit", (event) => {
+      event.preventDefault();
+
+      const symbol = event.target.elements.symbol.value;
+      const startDate = event.target.elements["start-date"].value;
+      const endDate = event.target.elements["end-date"].value;
+      const interval = event.target.elements.interval.value;
+
+      resolve({ symbol, startDate, endDate, interval });
+    });
+  });
+}
+
+export { getUserInput };
