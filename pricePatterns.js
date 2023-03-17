@@ -5,28 +5,28 @@ function isValidNumber(value) {
   return !isNaN(value) && isFinite(value);
 }
 
-function analyzePricePatterns(closePrices, volumes, threshold = 0.03, volumeThreshold = 0.05, rsiPeriod = 14, rsiThreshold = 30) {
+function analyzePricePatterns(prices, volume, threshold = 0.03, volumeThreshold = 0.05, rsiPeriod = 14, rsiThreshold = 30) { // Zmienione tutaj
   const patterns = [];
 
-  const rsi = calculateRSI(closePrices, rsiPeriod);
-
-  for (let i = 1; i < closePrices.length - 2; i++) {
+  const rsi = calculateRSI(prices, rsiPeriod);
+  
+  for (let i = 1; i < prices.length - 2; i++) {
     const patternLength = i - (patterns.length > 0 ? patterns[patterns.length - 1].index : 0);
-    if (isDoubleBottom(closePrices, i, threshold)) {
+    if (isDoubleBottom(prices, i, threshold)) {
       patterns.push({ index: i, type: 'Double Bottom', length: patternLength });
-    } else if (isDoubleTop(closePrices, i, threshold)) {
+    } else if (isDoubleTop(prices, i, threshold)) {
       patterns.push({ index: i, type: 'Double Top', length: patternLength });
-    } else if (isTriangle(closePrices, i, threshold, 'symmetrical')) {
+    } else if (isTriangle(prices, i, threshold, 'symmetrical')) {
       patterns.push({ index: i, type: 'Symmetrical Triangle', length: patternLength });
-    } else if (isTriangle(closePrices, i, threshold, 'ascending')) {
+    } else if (isTriangle(prices, i, threshold, 'ascending')) {
       patterns.push({ index: i, type: 'Ascending Triangle', length: patternLength });
-    } else if (isTriangle(closePrices, i, threshold, 'descending')) {
+    } else if (isTriangle(prices, i, threshold, 'descending')) {
       patterns.push({ index: i, type: 'Descending Triangle', length: patternLength });
-    } else if (isFlag(closePrices, volumes, i, threshold, volumeThreshold, rsi, rsiThreshold)) {
+    } else if (isFlag(prices, volume, i, threshold, volumeThreshold, rsi, rsiThreshold)) {
       patterns.push({ index: i, type: 'Flag', length: patternLength });
-    } else if (isDescendingTriangle(closePrices, i, threshold)) {
+    } else if (isDescendingTriangle(prices, i, threshold)) {
       patterns.push({ index: i, type: 'Descending Triangle', length: patternLength });
-    } else if (isRectangleTriangle(closePrices, i, threshold)) {
+    } else if (isRectangleTriangle(prices, i, threshold)) {
       patterns.push({ index: i, type: 'Rectangle Triangle', length: patternLength });
     }
   }

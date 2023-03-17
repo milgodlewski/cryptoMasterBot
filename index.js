@@ -9,8 +9,8 @@ async function main() {
   
   const closePrices = historicalData.map(data => data.close);
   const volumes = historicalData.map(data => data.volume);
-  const patterns = analyze(closePrices, volumes);
-
+  const patterns = analyze(closePrices, volumes); 
+  
   calculateAndPrintStatistics(patterns, closePrices);
 }
 

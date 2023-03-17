@@ -43,15 +43,37 @@ function printPriceStatistics(patterns, prices) {
 }
 
 function calculateAndPrintStatistics(patterns, closePrices) {
-  const patternStats = groupPatternsByType(patterns);
-  const patternTypes = Object.keys(patternStats);
+  const patternStats = {};
 
-  for (const type of patternTypes) {
-    const patternTypeStats = patternStats[type];
-    console.log(`${type}: ${patternTypeStats.length}`);
-    printPriceStatistics(patternTypeStats, closePrices);
+  for (const pattern of patterns) {
+    if (!patternStats[pattern.type]) {
+      patternStats[pattern.type] = {
+        count: 0,
+        prices: [],
+      };
+    }
+
+    patternStats[pattern.type].count++;
+    const patternPrice = closePrices[pattern.index];
+    patternStats[pattern.type].prices.push(patternPrice);
+  }
+
+  console.log("Statystyki cen wzorców:");
+  const allPrices = closePrices.slice(1, closePrices.length - 2); // Pomiń pierwszy i dwa ostatnie elementy, ponieważ nie są używane w analizie wzorców
+  const mean = calculateMean(allPrices);
+  const median = calculateMedian(allPrices);
+  const standardDeviation = calculateStandardDeviation(allPrices, mean);
+  console.log(
+    `  Średnia: ${mean.toFixed(2)}, Mediana: ${median.toFixed(
+      2,
+    )}, Odchylenie standardowe: ${standardDeviation.toFixed(2)}`
+  );
+
+  for (const patternType in patternStats) {
+    console.log(`${patternType}: ${patternStats[patternType].count}`);
   }
 }
+
 
 module.exports = {
   calculateAndPrintStatistics,
