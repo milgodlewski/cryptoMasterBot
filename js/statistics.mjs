@@ -1,4 +1,4 @@
-import { groupPatternsByType } = from "./groupedPatterns";
+import { groupPatternsByType } from "./groupedPatterns";
 
 function isValidNumber(value) {
   return !isNaN(value) && isFinite(value);

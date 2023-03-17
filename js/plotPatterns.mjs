@@ -1,9 +1,11 @@
 import * as plotly from 'plotly.js-dist';
 
-function plotHistoricalData(prices, patterns, userInput) {
+function plotHistoricalData(historicalData, patterns, userInput, options) {
+  const { activePattern } = options;
+
   const trace1 = {
-    x: prices.map((entry) => new Date(entry.openTime)),
-    y: prices.map((entry) => entry.close),
+    x: historicalData.map((entry) => new Date(entry.openTime)),
+    y: historicalData.map((entry) => entry.close),
     mode: 'lines',
     name: `${userInput.symbol} Price`,
   };
@@ -19,11 +21,12 @@ function plotHistoricalData(prices, patterns, userInput) {
         mode: 'markers+text',
         textposition: 'top center',
         name: pattern.type,
+        visible: pattern.type === activePattern ? true : 'legendonly',
       };
     }
 
-    patternTraces[pattern.type].x.push(new Date(prices[pattern.index].openTime));
-    patternTraces[pattern.type].y.push(prices[pattern.index].close);
+    patternTraces[pattern.type].x.push(new Date(historicalData[pattern.index].openTime));
+    patternTraces[pattern.type].y.push(historicalData[pattern.index].close);
     patternTraces[pattern.type].text.push(pattern.type);
   });
 
@@ -37,5 +40,7 @@ function plotHistoricalData(prices, patterns, userInput) {
 
   plotly.newPlot(document.getElementById('plot'), data, layout);
 }
+
+
 
 export { plotHistoricalData };

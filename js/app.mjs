@@ -20,6 +20,28 @@ async function main(symbol, startDate, endDate, interval) {
   const prices = historicalData.map((entry) => entry.close);
   const volumes = historicalData.map((entry) => entry.volume);
   const patterns = analyzePatterns(prices, volumes);
-  patternPerformance(historicalData, patterns);
-  plotHistoricalData(historicalData, patterns, userInput);
+  const performance = patternPerformance(historicalData, patterns); // Zaktualizowane
+  const bestPattern = selectBestPattern(performance);
+
+  const options = {
+    activePattern: bestPattern,
+  };
+
+  plotHistoricalData(historicalData, patterns, userInput, options);
+}
+
+
+function selectBestPattern(patternPerformanceResults) {
+  let bestPattern = null;
+  let bestPositiveRate = -Infinity;
+
+  Object.keys(patternPerformanceResults).forEach((patternType) => {
+    const positiveRate = patternPerformanceResults[patternType].positiveRate;
+    if (positiveRate > bestPositiveRate) {
+      bestPositiveRate = positiveRate;
+      bestPattern = patternType;
+    }
+  });
+
+  return bestPattern;
 }
