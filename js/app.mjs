@@ -1,7 +1,7 @@
-import { getHistoricalData } from "./historicalData.mjs";
+import HistoricalDataFetcher from "./historicalData.mjs";
 import { analyzePatterns } from "./pricePatterns.mjs";
 import { patternPerformance } from "./patternPerformance.mjs";
-import { plotHistoricalData } from "./plotPatterns.mjs";
+import Plotter from "./plotPatterns.mjs"; // Zmieniony import
 
 document.getElementById("user-input-form").addEventListener("submit", async (event) => {
   event.preventDefault();
@@ -15,7 +15,7 @@ document.getElementById("user-input-form").addEventListener("submit", async (eve
 });
 
 async function main(symbol, startDate, endDate, interval) {
-  const historicalData = await getHistoricalData(symbol, startDate, endDate, interval);
+  const historicalData = await HistoricalDataFetcher.getHistoricalData(symbol, startDate, endDate, interval);
   const userInput = { symbol, startDate, endDate, interval };
   const prices = historicalData.map((entry) => entry.close);
   const volumes = historicalData.map((entry) => entry.volume);
@@ -27,7 +27,9 @@ async function main(symbol, startDate, endDate, interval) {
     activePattern
   };
 
-  plotHistoricalData(historicalData, patterns, userInput, options, performanceResults);
+  const plotter = new Plotter();
+  
+  plotter.plotHistoricalData(historicalData, patterns, userInput, options, performanceResults);
 }
 
 function selectBestPattern(performanceResults) {
