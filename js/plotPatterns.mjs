@@ -1,6 +1,26 @@
 import * as plotly from 'plotly.js-dist';
 
-function plotHistoricalData(historicalData, patterns, userInput, options) {
+function createPerformanceLegend(performance) {
+  const legend = document.createElement('div');
+  legend.id = 'performance-legend';
+  legend.innerHTML = `<h3>Pattern Performance:</h3>`;
+  
+  Object.entries(performance).forEach(([patternType, patternStats]) => {
+    const patternStatsHTML = `
+      <div class="pattern-stats">
+        <h4>${patternType}:</h4>
+        <p>Positive Rate: ${patternStats.positiveRate.toFixed(2)}</p>
+        <p>Total Occurrences: ${patternStats.totalOccurrences}</p>
+      </div>
+    `;
+    legend.innerHTML += patternStatsHTML;
+  });
+
+  return legend;
+}
+
+function plotHistoricalData(historicalData, patterns, userInput, options, performanceResults) {
+  console.log(performanceResults);
   const { activePattern } = options;
 
   const trace1 = {
@@ -20,14 +40,21 @@ function plotHistoricalData(historicalData, patterns, userInput, options) {
         text: [],
         mode: 'markers+text',
         textposition: 'top center',
-        name: pattern.type,
-        visible: pattern.type === activePattern ? true : 'legendonly',
+        name: `${pattern.type} (${performanceResults[pattern.type] ? Math.round(performanceResults[pattern.type].positiveRate * 100) / 100 : 'N/A'}%)`,
+        marker: { opacity: 0.5 },
       };
     }
 
     patternTraces[pattern.type].x.push(new Date(historicalData[pattern.index].openTime));
     patternTraces[pattern.type].y.push(historicalData[pattern.index].close);
-    patternTraces[pattern.type].text.push(pattern.type);
+
+    if (pattern.type === activePattern) {
+      patternTraces[pattern.type].text.push(pattern.type);
+      patternTraces[pattern.type].marker.opacity = 1;
+    } else {
+      patternTraces[pattern.type].text.push('');
+      patternTraces[pattern.type].marker.opacity = 0;
+    }
   });
 
   const data = [trace1, ...Object.values(patternTraces)];
@@ -36,10 +63,14 @@ function plotHistoricalData(historicalData, patterns, userInput, options) {
     title: `${userInput.symbol} Price History`,
     xaxis: { title: 'Time' },
     yaxis: { title: 'Price' },
+    showlegend: true,
   };
 
   plotly.newPlot(document.getElementById('plot'), data, layout);
 }
+
+
+
 
 
 

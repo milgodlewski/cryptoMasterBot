@@ -3,10 +3,10 @@ function patternPerformance(priceData, patterns, lookahead = 5) {
 
   patterns.forEach((pattern) => {
     const { index, type } = pattern;
-    const currentPrice = priceData[index].close;
+    const currentPrice = priceData[index];
 
     if (index + lookahead < priceData.length) {
-      const futurePrice = priceData[index + lookahead].close;
+      const futurePrice = priceData[index + lookahead];
       const priceChange = (futurePrice - currentPrice) / currentPrice;
       if (!performance[type]) {
         performance[type] = {

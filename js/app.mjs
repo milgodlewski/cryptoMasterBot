@@ -20,23 +20,22 @@ async function main(symbol, startDate, endDate, interval) {
   const prices = historicalData.map((entry) => entry.close);
   const volumes = historicalData.map((entry) => entry.volume);
   const patterns = analyzePatterns(prices, volumes);
-  const performance = patternPerformance(historicalData, patterns); // Zaktualizowane
-  const bestPattern = selectBestPattern(performance);
+  const performanceResults = patternPerformance(prices, patterns);
+  const activePattern = selectBestPattern(performanceResults);
 
   const options = {
-    activePattern: bestPattern,
+    activePattern
   };
 
-  plotHistoricalData(historicalData, patterns, userInput, options);
+  plotHistoricalData(historicalData, patterns, userInput, options, performanceResults);
 }
 
-
-function selectBestPattern(patternPerformanceResults) {
+function selectBestPattern(performanceResults) {
   let bestPattern = null;
   let bestPositiveRate = -Infinity;
 
-  Object.keys(patternPerformanceResults).forEach((patternType) => {
-    const positiveRate = patternPerformanceResults[patternType].positiveRate;
+  Object.keys(performanceResults).forEach((patternType) => {
+    const positiveRate = performanceResults[patternType].positiveRate;
     if (positiveRate > bestPositiveRate) {
       bestPositiveRate = positiveRate;
       bestPattern = patternType;
