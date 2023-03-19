@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="pl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Price Action Trading App</title>
+    <link rel="stylesheet" href="./src/App.css" />
+    <link rel="stylesheet" href="./src/components/Chart/Chart.css" />
+    <link rel="stylesheet" href="./src/components/TradeHistory/TradeHistory.css" />
+    <link rel="stylesheet" href="./src/components/TradeForm/TradeForm.css" />
+  </head>
+  <body>
+    <header>
+      <h1>Price Action Trading App</h1>
+    </header>
+    <main>
+      <section id="chart-container"></section>
+      <section id="trade-history-container"></section>
+      <section id="trade-form-container">
+        <form id="trade-form">
+          <label for="symbol">Symbol:</label>
+          <input type="text" id="symbol" name="symbol" required />
+          <label for="order-type">Order type:</label>
+          <select id="order-type" name="order-type" required>
+            <option value="buy">Buy</option>
+            <option value="sell">Sell</option>
+          </select>
+          <label for="quantity">Quantity:</label>
+          <input type="number" id="quantity" name="quantity" step="0.01" required />
+          <button type="submit">Submit</button>
+        </form>
+      </section>
+      <section id="user-input-form-container">
+        <form id="user-input-form">
+          <label for="startDate">Start date:</label>
+          <input type="date" id="startDate" name="startDate" required />
+          <label for="endDate">End date:</label>
+          <input type="date" id="endDate" name="endDate" required />
+          <label for="interval">Interval:</label>
+          <select id="interval" name="interval" required>
+            <option value="1m">1m</option>
+            <option value="5m">5m</option>
+            <option value="15m">15m</option>
+            <option value="1h">1h</option>
+            <option value="1d">1d</option>
+          </select>
+          <button type="submit">Submit</button>
+        </form>
+      </section>
+    </main>
+    <script type="module" src="./src/index.mjs"></script>
+  </body>
+</html>

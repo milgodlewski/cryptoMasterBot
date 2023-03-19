@@ -12,20 +12,18 @@ class Chart {
   }
 
   draw() {
-    // Usuń istniejący wykres, jeśli istnieje
     if (this.chartInstance) {
       this.chartInstance.destroy();
     }
 
-    // Utwórz nowy wykres z danymi z `this.data`
     this.chartInstance = new ChartJS(this.ctx, {
-      type: "line", // Wybierz typ wykresu, np. liniowy
+      type: "line", 
       data: {
-        labels: this.data.map((item) => item.time), // Konwertuj dane na etykiety osi X
+        labels: this.data.map((item) => item.time),
         datasets: [
           {
             label: "Cena",
-            data: this.data.map((item) => item.price), // Konwertuj dane na wartości osi Y
+            data: this.data.map((item) => item.price), 
             borderColor: "rgba(75, 192, 192, 1)",
             backgroundColor: "rgba(75, 192, 192, 0.2)",
           },
@@ -34,7 +32,7 @@ class Chart {
       options: {
         scales: {
           x: {
-            type: "time", // Ustaw skalę osi X na czas
+            type: "time", 
           },
         },
       },
@@ -42,10 +40,19 @@ class Chart {
   }
 
   update(newData) {
-    // Aktualizuj dane wykresu i narysuj go ponownie
     this.setData(newData);
     this.draw();
   }
 }
 
 export default Chart;
+
+export function drawChart() {
+  const chartContainer = document.getElementById("chart-container");
+  const canvas = document.createElement("canvas");
+  chartContainer.appendChild(canvas);
+
+  const chart = new Chart(canvas);
+  chart.setData(sampleData); 
+  chart.draw(); 
+}
