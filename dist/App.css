@@ -1,0 +1,25 @@
+body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+}
+
+.container {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  margin: 20px;
+}
+
+.chart-container {
+  flex: 1;
+}
+
+.trade-history-container {
+  flex: 1;
+}
+
+.trade-form-container {
+  flex: 1;
+}

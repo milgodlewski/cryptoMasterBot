@@ -15,15 +15,20 @@ class Chart {
     if (this.chartInstance) {
       this.chartInstance.destroy();
     }
-
+  
+    // Sprawdź, czy this.data zostało zainicjowane przed próbą jego wykorzystania
+    if (!this.data) {
+      return;
+    }
+  
     this.chartInstance = new ChartJS(this.ctx, {
-      type: "line", 
+      type: "line",
       data: {
         labels: this.data.map((item) => item.time),
         datasets: [
           {
             label: "Cena",
-            data: this.data.map((item) => item.price), 
+            data: this.data.map((item) => item.price),
             borderColor: "rgba(75, 192, 192, 1)",
             backgroundColor: "rgba(75, 192, 192, 0.2)",
           },
@@ -32,12 +37,13 @@ class Chart {
       options: {
         scales: {
           x: {
-            type: "time", 
+            type: "time",
           },
         },
       },
     });
   }
+  
 
   update(newData) {
     this.setData(newData);
@@ -53,6 +59,12 @@ export function drawChart() {
   chartContainer.appendChild(canvas);
 
   const chart = new Chart(canvas);
-  chart.setData(sampleData); 
-  chart.draw(); 
+
+  // Tylko jeśli sampleData istnieje, ustaw dane na wykresie
+  if (typeof sampleData !== 'undefined') {
+    chart.setData(sampleData);
+  }
+
+  chart.draw();
 }
+
