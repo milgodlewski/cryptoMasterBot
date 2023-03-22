@@ -33,13 +33,13 @@
       </form>
     </section>
     <section id="analysis-input-form-container">
-      <form id="analysis-input-form">
+      <form id="analysis-form">
         <label for="symbol">Symbol:</label>
         <input type="text" id="symbol" name="symbol" required value="BTCUSDT"/>
-        <label for="startDate">Start date:</label>
-        <input type="date" id="startDate" name="startDate" required />
-        <label for="endDate">End date:</label>
-        <input type="date" id="endDate" name="endDate" required />
+        <label for="start-date">Start date:</label>
+        <input type="date" id="start-date" name="start-date" required />
+        <label for="end-date">End date:</label>
+        <input type="date" id="end-date" name="end-date" required />
         <label for="interval">Interval:</label>
         <select id="interval" name="interval" required>
           <option value="1m">1m</option>
@@ -52,7 +52,9 @@
       </form>
     </section>
   </main>
-  <div id="plot"></div>
+  <div id="plot-container">
+    <div id="plot"></div>
+  </div>
   <script type="module" src="/dist/bundle.js"></script>
 </body>
 

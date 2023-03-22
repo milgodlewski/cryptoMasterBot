@@ -1,8 +1,8 @@
 import { main } from './App.mjs';
 
 function setDefaultValues() {
-  const startDateInput = document.getElementById('startDate');
-  const endDateInput = document.getElementById('endDate');
+  const startDateInput = document.getElementById('start-date');
+  const endDateInput = document.getElementById('end-date');
   const symbolInput = document.getElementById('symbol');
 
   const today = new Date();
