@@ -10,20 +10,36 @@ class Plotter {
     legend.innerHTML = `<h3>Pattern Performance:</h3>`;
     
     Object.entries(performance).forEach(([patternType, patternStats]) => {
+      const isActivePattern = patternType === this.currentPlotParams.options.activePattern;
       const patternStatsHTML = `
-      <div class="pattern-stats">
+      <div class="pattern-stats${isActivePattern ? ' active' : ''}"${isActivePattern ? ` data-pattern-type="${patternType}"` : ''}>
       <h4>${patternType}:</h4>
       <p>Positive Rate: ${patternStats.positiveRate.toFixed(2)}</p>
       <p>Total Occurrences: ${patternStats.totalOccurrences}</p>
       </div>
       `;
+      
       legend.innerHTML += patternStatsHTML;
+    });
+    
+    legend.addEventListener('click', (event) => {
+      const patternType = event.target.closest('.pattern-stats')?.dataset.patternType;
+      if (patternType) {
+        const patternStatsElements = document.querySelectorAll(`#${this.performanceLegendId} .pattern-stats`);
+        patternStatsElements.forEach((elem) => {
+          if (elem.dataset.patternType === patternType) {
+            elem.classList.add('active');
+          } else {
+            elem.classList.remove('active');
+          }
+        });
+        this.plotHistoricalData({ ...this.currentPlotParams, options: { activePattern: patternType } });
+      }
     });
     
     return legend;
   }
-
-
+  
   clear() {
     const plotElement = document.getElementById('plot');
     Plotly.purge(plotElement);
@@ -35,6 +51,7 @@ class Plotter {
   }
   
   plotHistoricalData({ historicalData, patterns, userInput, options = {}, performanceResults }) {
+    this.currentPlotParams = { historicalData, patterns, userInput, options, performanceResults };
     this.clear();
     const { activePattern } = options;
     
@@ -87,6 +104,7 @@ class Plotter {
     
     return patternTraces;
   }
+  
   
 }
 export default Plotter ;

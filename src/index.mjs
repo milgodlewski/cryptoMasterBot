@@ -1,4 +1,5 @@
 import { main } from './App.mjs';
+import './tailwind.css';
 
 function setDefaultValues() {
   const startDateInput = document.getElementById('start-date');

@@ -16,7 +16,6 @@ class Chart {
       this.chartInstance.destroy();
     }
   
-    // Sprawdź, czy this.data zostało zainicjowane przed próbą jego wykorzystania
     if (!this.data) {
       return;
     }
@@ -60,7 +59,6 @@ export function drawChart() {
 
   const chart = new Chart(canvas);
 
-  // Tylko jeśli sampleData istnieje, ustaw dane na wykresie
   if (typeof sampleData !== 'undefined') {
     chart.setData(sampleData);
   }

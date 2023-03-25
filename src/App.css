@@ -12,8 +12,9 @@ body {
   margin: 20px;
 }
 
-.chart-container {
+#chart-container {
   flex: 1;
+  display: none;
 }
 
 .trade-history-container {
@@ -23,3 +24,4 @@ body {
 .trade-form-container {
   flex: 1;
 }
+

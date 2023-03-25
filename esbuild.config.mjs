@@ -4,6 +4,13 @@ import fs from "fs";
 import glob from "glob";
 import path from "path";
 import { promisify } from "util";
+import pkg from 'esbuild-plugin-postcss2';
+import postcss from "postcss";
+import postcssImport from "postcss-import";
+import tailwindcss from "tailwindcss";
+import autoprefixer from "autoprefixer";
+
+const { default: createPostcssPlugin } = pkg;
 
 const globAsync = promisify(glob);
 
@@ -29,14 +36,23 @@ const options = {
     ".js": "jsx",
   },
   inject: ["./src/plotly-shim.js"],
+  plugins: [
+    createPostcssPlugin({
+      plugins: [postcssImport, tailwindcss, autoprefixer],
+      onEnd: async ({ css }) => {
+        if (css) {
+          await fs.promises.writeFile("dist/tailwind.css", css);
+        }
+      },
+    }),
+  ],
 };
 
-function build() {
-  esbuild.build(options).catch(() => process.exit(1));
-  copyFiles("src/**/*.html");
-  copyFiles("src/**/*.css");
+async function build() {
+  const inputCss = await fs.promises.readFile("src/tailwind.css", "utf8");
+  const output = await postcss([tailwindcss, autoprefixer]).process(inputCss, { from: "src/tailwind.css", to: "dist/tailwind.css" });
+  await fs.promises.writeFile("dist/tailwind.css", output.css);
 }
-
 
 function createDistFolder() {
   if (!fs.existsSync('dist')) {
@@ -46,8 +62,15 @@ function createDistFolder() {
 
 createDistFolder();
 fs.copyFileSync("src/index.html", "dist/index.html");
-build();
+async function runBuild() {
+  await esbuild.build(options);
+}
 
-chokidar.watch("src/**/*.mjs").on("change", build);
-chokidar.watch("src/**/*.html").on("change", build);
+runBuild();
+
+chokidar.watch("src/**/*.mjs").on("change", runBuild);
+chokidar.watch("src/**/*.html").on("change", () => {
+  fs.copyFileSync("src/index.html", "dist/index.html");
+});
 chokidar.watch("src/**/*.css").on("change", build);
+chokidar.watch("src/**/*.mjs").on("change", build);
