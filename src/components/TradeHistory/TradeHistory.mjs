@@ -27,5 +27,4 @@ class TradeHistory {
 export default TradeHistory;
 
 export function initializeTradeHistory() {
-  //TODO: Zaimplementuj logikę inicjalizacji historii transakcji
 }
