@@ -28,7 +28,7 @@ This application uses cors-anywhere to bypass CORS restrictions. To set up cors-
 const cors_proxy = require("cors-anywhere");
 
 cors_proxy.createServer({
-  originWhitelist: [], // Allow all origins
+  originWhitelist: [], 
 }).listen(8080, () => {
   console.log("CORS Anywhere server is running on port 8080");
 });
@@ -44,14 +44,4 @@ Add a new script in package.json to start the CORS proxy server:
 ```
 
 ## Config file
-Config file template 
-
-```javascript
-const config = {
-  apiUrl: 'https://api.binance.com',
-  apiKey: 'xxxxx',
-  apiSecret: 'yyyy',
-};
-
-export default config;
-```
+Update binanceAccessConfig file template 
