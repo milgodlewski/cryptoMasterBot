@@ -9,8 +9,11 @@ function isAbandonedBaby(data, index) {
   if (index < 2 || index >= data.length) {
     return false;
   }
-  
+
+  const bar = data[index];
   const prevBar = data[index - 1];
+  const prev2Bar = data[index - 2];
+  
   const currBar = data[index];
   const nextBar = data[index + 1];
   const isPrevDoji = isDoji(prevBar);
@@ -80,9 +83,18 @@ function isDarkCloudCover(prevBar, currBar) {
  * @returns {boolean} Returns true if the pattern is a Doji, otherwise false.
  */
 function isDoji(bar) {
+  const open = bar.open;
+  const high = bar.high;
+  const low = bar.low;
+  const close = bar.close;
+
+  if (open === undefined || high === undefined || low === undefined || close === undefined) {
+      return false;
+  }
   const bodySize = Math.abs(bar.close - bar.open);
   return bodySize <= 0.01 * (bar.high - bar.low);
 }
+
 
 /**
  * Checks if the given candlestick pattern is an Evening Star pattern.
@@ -124,8 +136,7 @@ function isFallingThreeMethods(data, index) {
   const fourthBar = data[index - 1];
   const fifthBar = data[index];
   
-  return firstBar.open > firstBar.close && secondBar.open > secondBar.close && thirdBar
-  open < thirdBar.close && fourthBar.open < fourthBar.close && fifthBar.open > fifthBar.close && firstBar.open > secondBar.open && firstBar.close > secondBar.close && fifthBar.open < thirdBar.close && fifthBar.close < firstBar.close && thirdBar.high < firstBar.close && fourthBar.high < firstBar.close;
+  return firstBar.open > firstBar.close && secondBar.open > secondBar.close && thirdBar.open < thirdBar.close && fourthBar.open < fourthBar.close && fifthBar.open > fifthBar.close && firstBar.open > secondBar.open && firstBar.close > secondBar.close && fifthBar.open < thirdBar.close && fifthBar.close < firstBar.close && thirdBar.high < firstBar.close && fourthBar.high < firstBar.close;
 }
 
 /**
@@ -137,7 +148,7 @@ function isFallingThreeMethods(data, index) {
  */
 function isHammerOrHangingMan(prevBar, currBar) {
   const bodySize = Math.abs(currBar.close - currBar.open);
-  const lowerShadow = currBar.open - currBar.low;
+  const lowerShadow = Math.min(currBar.open, currBar.close) - currBar.low;
   const upperShadow = currBar.high - currBar.close;
   const minShadowSize = 2 * bodySize;
   
@@ -146,7 +157,7 @@ function isHammerOrHangingMan(prevBar, currBar) {
 function isInvertedHammer(prevBar, currBar) {
   const bodySize = Math.abs(currBar.close - currBar.open);
   const lowerShadow = currBar.open - currBar.low;
-  const upperShadow = currBar.high - currBar.close;
+  const upperShadow = currBar.high - Math.max(currBar.open, currBar.close);
   const minShadowSize = 2 * bodySize;
   
   return upperShadow >= minShadowSize && lowerShadow <= bodySize / 2;
@@ -164,7 +175,10 @@ function isKicker(data, index) {
   const isPrevBarBearish = prevBar.open > prevBar.close;
   const isCurrBarBearish = currBar.open > currBar.close;
   
-  return (isPrevBarBullish && isCurrBarBearish && currBar.open <= prevBar.open && currBar.close <= prevBar.open) || (isPrevBarBearish && isCurrBarBullish && currBar.open >= prevBar.open && currBar.close >= prevBar.open);
+  return (
+    (isPrevBarBullish && isCurrBarBearish && currBar.open <= prevBar.open && currBar.close <= prevBar.open) ||
+    (isPrevBarBearish && isCurrBarBullish && currBar.open >= prevBar.open && currBar.close >= prevBar.open)
+  ) && prevBar.close !== currBar.close;  
 }
 
 function isMarubozu(bar) {
@@ -207,14 +221,15 @@ function isRisingThreeMethods(data, index) {
   ];
 
   return (
-    first.close < first.open &&
-    second.close > second.open &&
-    third.close > third.open &&
-    fourth.close > fourth.open &&
-    fifth.close < fifth.open &&
-    first.open > fifth.close &&
-    second.close < first.close &&
-    second.open > fifth.open
+    first.open < first.close &&
+    second.open > second.close &&
+    third.open > third.close &&
+    fourth.open > fourth.close &&
+    fifth.open < fifth.close &&
+    first.close < second.open &&
+    second.close < third.open &&
+    third.close < fourth.open &&
+    fourth.close < fifth.open
   );
 }
 
@@ -363,3 +378,31 @@ function isTwoCrows(data, index) {
     third.close > first.close
   );
 }
+
+export {
+  isHammerOrHangingMan,
+  isBullishOrBearishHarami,
+  isMarubozu,
+  isThreeWhiteSoldiers,
+  isEveningStar,
+  isBullishEngulfing,
+  isBearishEngulfing,
+  isDarkCloudCover,
+  isPiercingLine,
+  isShootingStar,
+  isInvertedHammer,
+  isTweezerTops,
+  isTweezerBottoms,
+  isThreeInsideUp,
+  isThreeInsideDown,
+  isThreeOutsideUp,
+  isThreeOutsideDown,
+  isAbandonedBaby,
+  isDoji,
+  isKicker,
+  isTwoCrows,
+  isRisingThreeMethods,
+  isFallingThreeMethods,
+  isMorningStar,
+  isThreeBlackCrows,
+};                        

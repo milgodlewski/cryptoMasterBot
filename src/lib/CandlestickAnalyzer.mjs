@@ -24,7 +24,7 @@ import {
     isFallingThreeMethods,
     isMorningStar,
     isThreeBlackCrows,
-} from 'candlestickPatterns.mjs';
+} from '../lib/candlestickPatterns.mjs';
 
 /**
 * CandlestickAnalyzer - A class to analyze candlestick patterns and find support and resistance levels.
@@ -48,10 +48,9 @@ class CandlestickAnalyzer {
     * using a generic approach. The algorithm calculates potential levels based on price pivots,
     * and the result is an array of support and resistance levels.
     */
-    findSupportResistanceLevels(data) {
-        const potentialLevels = findCandlestickPatterns(data);
-        const supportAndResistanceLevels = findPotentialLevels(data);
-        const supportResistanceLevels = groupAndFilterLevels(potentialLevels);
+    findSupportResistanceLevels() {
+        const potentialLevels = this.findPotentialLevels();
+        const supportResistanceLevels = this.groupAndFilterLevels(potentialLevels);
         return supportResistanceLevels;
     }
     
@@ -68,11 +67,11 @@ class CandlestickAnalyzer {
     * and next low, and if so, adds it as a support level. The result is an array of potential
     * support and resistance levels.
     */
-    findPotentialLevels(data) {
+    findPotentialLevels() {
         const pivots = [];
         
-        for (let i = 1; i < data.length - 1; i++) {
-            const [previous, current, next] = [data[i - 1], data[i], data[i + 1]];
+        for (let i = 1; i < this.data.length - 1; i++) {
+            const [previous, current, next] = [this.data[i - 1], this.data[i], this.data[i + 1]];
             
             if (current.high > previous.high && current.high > next.high) {
                 pivots.push({ price: current.high, type: 'resistance' });
